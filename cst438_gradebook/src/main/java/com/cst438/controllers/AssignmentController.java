@@ -20,7 +20,6 @@ import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentListDTO;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.domain.CourseRepository;
-import com.cst438.domain.GradebookDTO;
 
 @RestController
 public class AssignmentController {

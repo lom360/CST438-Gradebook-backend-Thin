@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentListDTO;
+import com.cst438.domain.AssignmentListDTO.AssignmentDTO;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
@@ -66,12 +67,11 @@ public class AssignmentController {
 		assignment.setName(assignmentDTO.assignmentName);
 		
 		// TODO convert dueDate String to dueDate java.sql.Date
+//		 assignment.setDueDate(assignmentDTO.dueDate);
 		SimpleDateFormat dateConversion = new SimpleDateFormat("yyyy-MM-dd");
 		java.util.Date date = dateConversion.parse(assignmentDTO.dueDate);
 		java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 		assignment.setDueDate(sqlDate);
-//		 assignment.setDueDate(assignmentDTO.dueDate);
-
 		
 		assignment.setCourse(c);
 		
@@ -84,6 +84,39 @@ public class AssignmentController {
 		return assignmentDTO;
 	}
 	
+	@GetMapping("course/{c_id}/assignment/{a_id}")
+	public AssignmentListDTO.AssignmentDTO getAssignemnt(@PathVariable("c_id") int c_id, @PathVariable("a_id") int a_id) {
+		Assignment a = assignmentRepository.findById(a_id).get();
+		if(a.getCourse().getCourse_id() != c_id) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment does not exist in Course");
+		}
+//		if (a == null) {
+//			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment not found. ");
+//		}
+		
+		String date = a.getDueDate().toString();
+		AssignmentDTO assignmentDTO = new AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), date,a.getCourse().getTitle());
+		
+		return assignmentDTO;
+	}
+	
+	@PutMapping("/course/{c_id}/assignment/{a_id}")
+	@Transactional
+	public void updateAssignment(@PathVariable("c_id") int c_id, @PathVariable("a_id") int a_id, @RequestBody AssignmentListDTO.AssignmentDTO assignmentDTO) throws ParseException { 
+		Assignment assignment = assignmentRepository.findById(a_id).get();
+		if(assignment.getCourse().getCourse_id() != c_id) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment does not exist in Course");
+		}
+//		if (a == null) {
+//			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment not found. ");
+//		}
+		SimpleDateFormat dateConversion = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date date = dateConversion.parse(assignmentDTO.dueDate);
+		java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+		
+		assignment.setName(assignmentDTO.assignmentName);
+		assignment.setDueDate(sqlDate);
+	}
 	
 //	@GetMapping("/course/assignment")
 //	public AssignmentListDTO getAssignmentByCourse() {

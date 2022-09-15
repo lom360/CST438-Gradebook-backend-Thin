@@ -13,4 +13,7 @@ public interface AssignmentRepository extends CrudRepository <Assignment, Intege
 	
 	@Query(value="SELECT * FROM Assignment course_id=999001|123456",nativeQuery=true)
 	List<Assignment> findAssignmentByCourse(); // I ADDED THIS CODE HERE
+	
+	@Query(value="select * from Assignment where course_id= ?", nativeQuery=true)
+	List<Assignment> findAssignmentByCourseId(int id); // I ADDED THIS CODE HERE
 }

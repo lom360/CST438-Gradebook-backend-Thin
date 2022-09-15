@@ -1,5 +1,9 @@
 package com.cst438.controllers;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+//import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,23 +23,25 @@ import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentListDTO;
 import com.cst438.domain.AssignmentRepository;
+import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
 
 @RestController
 public class AssignmentController {
+	
 	@Autowired
 	AssignmentRepository assignmentRepository;
 	
 	@Autowired
-	AssignmentGradeRepository assignmentGradeRepository;
-	
-	@Autowired
 	CourseRepository courseRepository;
 	
-	
-	@GetMapping("/course/assignment")
-	public AssignmentListDTO getAssignmentByCourse() {
-		List<Assignment> assignments = assignmentRepository.findAssignmentByCourse();
+		
+	@GetMapping("course/{id}/assignment")
+	public AssignmentListDTO getAllAssignments(@PathVariable("id") int id) {
+		List<Assignment> assignments = assignmentRepository.findAssignmentByCourseId(id);
+		if(assignments.size() < 1) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course does not exist. Therefore no assignments.");
+		}
 		AssignmentListDTO result = new AssignmentListDTO();
 		for (Assignment a: assignments) {
 			result.assignments.add(new AssignmentListDTO.AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), a.getDueDate().toString() , a.getCourse().getTitle()));
@@ -43,26 +49,72 @@ public class AssignmentController {
 		return result;
 	}
 	
-	@PostMapping("/course/assignment")
-	public void addAssignment(@RequestBody Assignment assignment) {
-		assignmentRepository.save(assignment);
+	@PostMapping("course/{id}/assignment")
+	public AssignmentListDTO.AssignmentDTO addAssignment(@PathVariable("id") int courseId, @RequestBody AssignmentListDTO.AssignmentDTO assignmentDTO) throws ParseException {
+		
+		// lookup the course
+//		Course c = courseRepository.findById(assignmentDTO.courseId).get();
+		Course c = courseRepository.findById(courseId).get();
+		if(c == null) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment not found. "+assignmentDTO.courseId );
+		}
+		
+		// create a new assignment entity
+		Assignment assignment = new Assignment();
+		
+		// copy data from assignmentDTO to assignment
+		assignment.setName(assignmentDTO.assignmentName);
+		
+		// TODO convert dueDate String to dueDate java.sql.Date
+		SimpleDateFormat dateConversion = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date date = dateConversion.parse(assignmentDTO.dueDate);
+		java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+		assignment.setDueDate(sqlDate);
+//		 assignment.setDueDate(assignmentDTO.dueDate);
+
+		
+		assignment.setCourse(c);
+		
+		// save the assignment entity, save returns an updated assignment entity with assignment id primary key
+		Assignment newAssignment = assignmentRepository.save(assignment);
+		
+		assignmentDTO.assignmentId = newAssignment.getId();
+		
+		// return assignmentDTO that now contains the primary key.
+		return assignmentDTO;
 	}
 	
-	@DeleteMapping("/course/assignment/{id}")
-	public String deleteAssignment(@PathVariable int id) {
-		Optional<Assignment> assignment = assignmentRepository.findById(id);
-		if(assignment.isPresent()) {
-			assignmentRepository.delete(assignment.get());
-			return "Assignment with " + id + " has been deleted.";
-		}
-		else {
-			throw new RuntimeException("Assignment not found with " + id);
-		}
-	}
 	
-	@PutMapping("/course/assignment/{id}")
-	@Transactional
-	public Assignment updateAssignment(@RequestBody Assignment assignment) { 
-		return assignmentRepository.save(assignment);
-	}
+//	@GetMapping("/course/assignment")
+//	public AssignmentListDTO getAssignmentByCourse() {
+//		List<Assignment> assignments = assignmentRepository.findAssignmentByCourse();
+//		AssignmentListDTO result = new AssignmentListDTO();
+//		for (Assignment a: assignments) {
+//			result.assignments.add(new AssignmentListDTO.AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), a.getDueDate().toString() , a.getCourse().getTitle()));
+//		}
+//		return result;
+//	}
+//	
+//	@PostMapping("/course/assignment")
+//	public void addAssignment(@RequestBody Assignment assignment) {
+//		assignmentRepository.save(assignment);
+//	}
+//	
+//	@DeleteMapping("/course/assignment/{id}")
+//	public String deleteAssignment(@PathVariable int id) {
+//		Optional<Assignment> assignment = assignmentRepository.findById(id);
+//		if(assignment.isPresent()) {
+//			assignmentRepository.delete(assignment.get());
+//			return "Assignment with " + id + " has been deleted.";
+//		}
+//		else {
+//			throw new RuntimeException("Assignment not found with " + id);
+//		}
+//	}
+//	
+//	@PutMapping("/course/assignment/{id}")
+//	@Transactional
+//	public Assignment updateAssignment(@RequestBody Assignment assignment) { 
+//		return assignmentRepository.save(assignment);
+//	}
 }

@@ -10,4 +10,10 @@ public interface AssignmentRepository extends CrudRepository <Assignment, Intege
 
 	@Query("select a from Assignment a where a.needsGrading=1 and a.dueDate < current_date and a.course.instructor= :email order by a.id")
 	List<Assignment> findNeedGradingByEmail(@Param("email") String email);
+	
+	@Query(value="SELECT * FROM Assignment course_id=999001|123456",nativeQuery=true)
+	List<Assignment> findAssignmentByCourse(); // I ADDED THIS CODE HERE
+	
+	@Query(value="select * from Assignment where course_id= ?", nativeQuery=true)
+	List<Assignment> findAssignmentByCourseId(int id); // I ADDED THIS CODE HERE
 }

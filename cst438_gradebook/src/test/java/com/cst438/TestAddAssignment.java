@@ -73,18 +73,26 @@ public class TestAddAssignment {
 		aDTO.assignmentName  = "test assignment";
 		aDTO.courseId = TEST_COURSE_ID;
 		aDTO.dueDate = "2022-9-12";
-//		response = mvc.perform(MockMvcRequestBuilders.post("/assignment").accept(MediaType.APPLICATION_JSON).content(asJsonString(aDTO)).contentType(MediaType.APPLICATION_JSON))
+		
+		// make the post call to add the assignment
+		response = mvc.perform(MockMvcRequestBuilders.post("/assignment")
+				.accept(MediaType.APPLICATION_JSON)
+				.content(asJsonString(aDTO))
+				.contentType(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
 
 		// verify return data with entry for one student without no score
-//		assertEquals(200, response.getStatus());
+		assertEquals(200, response.getStatus());
 		
 		// get response body and convert to Java object.
-//		AssignmentListDTO.AssignmentDTO returnedDTO = fromJsonString(response.getContentAsString(), AssignmentDTO.class);
+		AssignmentListDTO.AssignmentDTO returnedDTO = fromJsonString(response.getContentAsString(), 
+				AssignmentListDTO.AssignmentDTO.class);
 		
 		// check that returned assignmentID is not 0.
-//		assertNotEquals(0, returnedDTO.assignmentId);
+		assertNotEquals(0, returnedDTO.assignmentId);
 		
 		// verify that a save was called on repository
+		verify(assignmentRepository, times(1)).save(any()); // verify that assignment Controller actually did a save to the database.
 	}
 	
 	private static String asJsonString(final Object obj) {

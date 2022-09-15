@@ -38,9 +38,10 @@ public class AssignmentController {
 	
 		
 	@GetMapping("course/{id}/assignment")
-	public AssignmentListDTO getAllAssignments(@PathVariable("id") int id) {
+	public AssignmentListDTO getCourseAssignments(@PathVariable("id") int id) {
 		List<Assignment> assignments = assignmentRepository.findAssignmentByCourseId(id);
-		if(assignments.size() < 1) {
+		Course c = courseRepository.findById(id).get();
+		if(c == null) {
 			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course does not exist. Therefore no assignments.");
 		}
 		AssignmentListDTO result = new AssignmentListDTO();
@@ -48,6 +49,22 @@ public class AssignmentController {
 			result.assignments.add(new AssignmentListDTO.AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), a.getDueDate().toString() , a.getCourse().getTitle()));
 		}
 		return result;
+	}
+	
+	@GetMapping("course/{c_id}/assignment/{a_id}")
+	public AssignmentListDTO.AssignmentDTO getAssignemnt(@PathVariable("c_id") int c_id, @PathVariable("a_id") int a_id) {
+		Assignment a = assignmentRepository.findById(a_id).get();
+		if(a.getCourse().getCourse_id() != c_id) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment does not exist in Course");
+		}
+//		if (a == null) {
+//			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment not found. ");
+//		}
+		
+		String date = a.getDueDate().toString();
+		AssignmentDTO assignmentDTO = new AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), date,a.getCourse().getTitle());
+		
+		return assignmentDTO;
 	}
 	
 	@PostMapping("course/{id}/assignment")
@@ -74,7 +91,6 @@ public class AssignmentController {
 		assignment.setDueDate(sqlDate);
 		
 		assignment.setCourse(c);
-		
 		// save the assignment entity, save returns an updated assignment entity with assignment id primary key
 		Assignment newAssignment = assignmentRepository.save(assignment);
 		
@@ -84,21 +100,6 @@ public class AssignmentController {
 		return assignmentDTO;
 	}
 	
-	@GetMapping("course/{c_id}/assignment/{a_id}")
-	public AssignmentListDTO.AssignmentDTO getAssignemnt(@PathVariable("c_id") int c_id, @PathVariable("a_id") int a_id) {
-		Assignment a = assignmentRepository.findById(a_id).get();
-		if(a.getCourse().getCourse_id() != c_id) {
-			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment does not exist in Course");
-		}
-//		if (a == null) {
-//			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment not found. ");
-//		}
-		
-		String date = a.getDueDate().toString();
-		AssignmentDTO assignmentDTO = new AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), date,a.getCourse().getTitle());
-		
-		return assignmentDTO;
-	}
 	
 	@PutMapping("/course/{c_id}/assignment/{a_id}")
 	@Transactional
@@ -118,36 +119,20 @@ public class AssignmentController {
 		assignment.setDueDate(sqlDate);
 	}
 	
-//	@GetMapping("/course/assignment")
-//	public AssignmentListDTO getAssignmentByCourse() {
-//		List<Assignment> assignments = assignmentRepository.findAssignmentByCourse();
-//		AssignmentListDTO result = new AssignmentListDTO();
-//		for (Assignment a: assignments) {
-//			result.assignments.add(new AssignmentListDTO.AssignmentDTO(a.getId(), a.getCourse().getCourse_id(), a.getName(), a.getDueDate().toString() , a.getCourse().getTitle()));
-//		}
-//		return result;
-//	}
-//	
-//	@PostMapping("/course/assignment")
-//	public void addAssignment(@RequestBody Assignment assignment) {
-//		assignmentRepository.save(assignment);
-//	}
-//	
-//	@DeleteMapping("/course/assignment/{id}")
-//	public String deleteAssignment(@PathVariable int id) {
-//		Optional<Assignment> assignment = assignmentRepository.findById(id);
-//		if(assignment.isPresent()) {
-//			assignmentRepository.delete(assignment.get());
-//			return "Assignment with " + id + " has been deleted.";
-//		}
-//		else {
-//			throw new RuntimeException("Assignment not found with " + id);
-//		}
-//	}
-//	
-//	@PutMapping("/course/assignment/{id}")
-//	@Transactional
-//	public Assignment updateAssignment(@RequestBody Assignment assignment) { 
-//		return assignmentRepository.save(assignment);
-//	}
+	@DeleteMapping("/course/{c_id}/assignment/{a_id}")
+	public String deleteAssignment(@PathVariable int c_id, @PathVariable int a_id) {
+		Optional<Assignment> assignment = assignmentRepository.findById(a_id);
+		Assignment a = assignmentRepository.findById(a_id).get();
+		if(a.getCourse().getCourse_id() != c_id) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment does not exist in Course");
+		}
+		if(assignment.isPresent()) {
+			assignmentRepository.delete(assignment.get());
+			return "Assignment with " + a_id + " has been deleted.";
+		}
+		else {
+			throw new RuntimeException("Assignment not found with " + a_id);
+		}
+	}
+	
 }

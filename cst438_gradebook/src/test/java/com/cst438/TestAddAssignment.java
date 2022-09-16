@@ -54,7 +54,6 @@ public class TestAddAssignment {
 		MockHttpServletResponse response;
 
 		// mock database data
-
 		Course course = new Course();
 		course.setCourse_id(TEST_COURSE_ID);
 

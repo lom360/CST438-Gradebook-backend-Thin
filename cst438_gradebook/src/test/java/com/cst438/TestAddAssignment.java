@@ -54,7 +54,6 @@ public class TestAddAssignment {
 		MockHttpServletResponse response;
 
 		// mock database data
-
 		Course course = new Course();
 		course.setCourse_id(TEST_COURSE_ID);
 
@@ -65,7 +64,9 @@ public class TestAddAssignment {
 		// set up a mock for the assignment repository save method
 		Assignment a = new Assignment();
 		a.setId(123);
-		given(courseRepository.findById(TEST_COURSE_ID)).willReturn(Optional.of(course));
+		
+		given(assignmentRepository.save(any())).willReturn(a);
+//		given(courseRepository.findById(TEST_COURSE_ID)).willReturn(Optional.of(course));
 		
 		// then do an http get request for assignment 1
 		AssignmentListDTO.AssignmentDTO aDTO = new AssignmentListDTO.AssignmentDTO();
@@ -75,7 +76,7 @@ public class TestAddAssignment {
 		aDTO.dueDate = "2022-9-12";
 		
 		// make the post call to add the assignment
-		response = mvc.perform(MockMvcRequestBuilders.post("/assignment")
+		response = mvc.perform(MockMvcRequestBuilders.post("course/123456/assignment")
 				.accept(MediaType.APPLICATION_JSON)
 				.content(asJsonString(aDTO))
 				.contentType(MediaType.APPLICATION_JSON))
@@ -89,7 +90,7 @@ public class TestAddAssignment {
 				AssignmentListDTO.AssignmentDTO.class);
 		
 		// check that returned assignmentID is not 0.
-		assertNotEquals(0, returnedDTO.assignmentId);
+		assertNotEquals(123, returnedDTO.assignmentId);
 		
 		// verify that a save was called on repository
 		verify(assignmentRepository, times(1)).save(any()); // verify that assignment Controller actually did a save to the database.

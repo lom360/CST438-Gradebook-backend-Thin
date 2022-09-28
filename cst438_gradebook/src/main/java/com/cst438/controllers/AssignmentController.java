@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,14 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
+import com.cst438.domain.AssignmentGrade;
 import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentListDTO;
 import com.cst438.domain.AssignmentListDTO.AssignmentDTO;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
+import com.cst438.domain.Enrollment;
+import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.GradebookDTO;
 
 @RestController
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3001"})
 public class AssignmentController {
 	
 	@Autowired
@@ -36,6 +42,11 @@ public class AssignmentController {
 	@Autowired
 	CourseRepository courseRepository;
 	
+	@Autowired
+	AssignmentGradeRepository assignmentGradeRepository;
+	
+	@Autowired
+	EnrollmentRepository enrollmentRepository;
 		
 	@GetMapping("course/{id}/assignment")
 	public AssignmentListDTO getCourseAssignments(@PathVariable("id") int id) {
@@ -91,6 +102,7 @@ public class AssignmentController {
 		assignment.setDueDate(sqlDate);
 		
 		assignment.setCourse(c);
+		assignment.setNeedsGrading(1);
 		// save the assignment entity, save returns an updated assignment entity with assignment id primary key
 		Assignment newAssignment = assignmentRepository.save(assignment);
 		
@@ -126,6 +138,7 @@ public class AssignmentController {
 		if(a.getCourse().getCourse_id() != c_id) {
 			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment does not exist in Course");
 		}
+
 		if(assignment.isPresent()) {
 			assignmentRepository.delete(assignment.get());
 			return "Assignment with " + a_id + " has been deleted.";

@@ -32,24 +32,6 @@ public class Cst438GradebookApplication  extends WebSecurityConfigurerAdapter {
 		SpringApplication.run(Cst438GradebookApplication.class, args);
 	}
 	
-	@Bean(name = "RegistrationService")
-	@ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "MQ")
-	public RegistrationService registrationServiceRESTMQ() {
-		return new RegistrationServiceMQ();
-	}
-	
-	@Bean(name = "RegistrationService")
-	@ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "REST")
-	public RegistrationService registrationServiceREST() {
-		return new RegistrationServiceREST();
-	}
-	
-	@Bean(name = "RegistrationService")
-	@ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "default")
-	public RegistrationService registrationServiceDefault() {
-		return new RegistrationService();
-	}
-	
 	@Override
    	protected void configure(HttpSecurity http) throws Exception {
 		SimpleUrlAuthenticationFailureHandler handler = new SimpleUrlAuthenticationFailureHandler("/");
@@ -67,7 +49,6 @@ public class Cst438GradebookApplication  extends WebSecurityConfigurerAdapter {
  		}));
 	}
 	
-
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -79,5 +60,23 @@ public class Cst438GradebookApplication  extends WebSecurityConfigurerAdapter {
 		config.applyPermitDefaultValues();
 		source.registerCorsConfiguration("/**", config);
 		return source;
+	}
+	
+	@Bean(name = "RegistrationService")
+	@ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "MQ")
+	public RegistrationService registrationServiceRESTMQ() {
+		return new RegistrationServiceMQ();
+	}
+	
+	@Bean(name = "RegistrationService")
+	@ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "REST")
+	public RegistrationService registrationServiceREST() {
+		return new RegistrationServiceREST();
+	}
+	
+	@Bean(name = "RegistrationService")
+	@ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "default")
+	public RegistrationService registrationServiceDefault() {
+		return new RegistrationService();
 	}
 }

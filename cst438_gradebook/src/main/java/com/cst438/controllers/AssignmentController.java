@@ -49,7 +49,7 @@ public class AssignmentController {
 	
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
-		
+	
 	@GetMapping("course/{id}/assignment")
 	public AssignmentListDTO getCourseAssignments(@PathVariable("id") int id) {
 		List<Assignment> assignments = assignmentRepository.findAssignmentByCourseId(id);
@@ -94,8 +94,8 @@ public class AssignmentController {
 		}
 		
 		// Check if user's email matches instructor of course.
-		String instructor_email = principal.getAttribute("email");
-		if(!instructor_email.equals(c.getInstructor())) { // If it doesn't equal then...
+		String email = principal.getAttribute("email");
+		if(!email.equals(c.getInstructor())) { // If it doesn't equal then...
 			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course does not exist for this instructor");
 		}
 		

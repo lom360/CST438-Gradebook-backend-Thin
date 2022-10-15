@@ -1,10 +1,15 @@
 package com.cst438.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import com.cst438.domain.AssignmentGradeRepository;
+import com.cst438.domain.AssignmentRepository;
+import com.cst438.domain.CourseRepository;
 
 
 @Controller
@@ -19,10 +24,10 @@ public class LoginController {
 	@Value("${frontend.post.login.url}")
 	String redirect_url;
 	
-	
 	@GetMapping("/user")
 	public String user (@AuthenticationPrincipal OAuth2User principal){
 		// used by front end to display user name.
 		return "redirect:" + redirect_url;
-	}
+	}	
+
 }

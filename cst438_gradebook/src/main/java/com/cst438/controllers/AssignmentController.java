@@ -9,6 +9,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +49,7 @@ public class AssignmentController {
 	
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
-		
+	
 	@GetMapping("course/{id}/assignment")
 	public AssignmentListDTO getCourseAssignments(@PathVariable("id") int id) {
 		List<Assignment> assignments = assignmentRepository.findAssignmentByCourseId(id);
@@ -79,13 +81,22 @@ public class AssignmentController {
 	}
 	
 	@PostMapping("course/{id}/assignment")
-	public AssignmentListDTO.AssignmentDTO addAssignment(@PathVariable("id") int courseId, @RequestBody AssignmentListDTO.AssignmentDTO assignmentDTO) throws ParseException {
+	public AssignmentListDTO.AssignmentDTO addAssignment(
+			@PathVariable("id") int courseId,
+			@RequestBody AssignmentListDTO.AssignmentDTO assignmentDTO,
+			@AuthenticationPrincipal OAuth2User principal) throws ParseException {
 		
 		// lookup the course
 //		Course c = courseRepository.findById(assignmentDTO.courseId).get();
 		Course c = courseRepository.findById(courseId).get();
 		if(c == null) {
 			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Assignment not found. "+assignmentDTO.courseId );
+		}
+		
+		// Check if user's email matches instructor of course.
+		String email = principal.getAttribute("email");
+		if(!email.equals(c.getInstructor())) { // If it doesn't equal then...
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course does not exist for this instructor");
 		}
 		
 		// create a new assignment entity

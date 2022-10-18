@@ -11,4 +11,6 @@ public interface AssignmentGradeRepository extends CrudRepository <AssignmentGra
 			@Param("assignmentId") int assignmentId, 
 			@Param("email") String email );
 	
+	@Query(value="select score from Assignment_Grade where assignment_id= ? and enrollment_id= ?", nativeQuery=true)
+	String findScoreByAssignmentIdAndEnrollmentId(int assignmentId, int enrollmentId);
 }

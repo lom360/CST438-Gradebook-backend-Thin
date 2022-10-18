@@ -7,6 +7,8 @@ import java.util.ArrayList;
  */
 public class AssignmentListDTO {
 
+	public boolean isInstructor; // I added this code myself
+	
 	public static class AssignmentDTO {
 		public int assignmentId;
 		public String assignmentName;
